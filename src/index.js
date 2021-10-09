@@ -21,7 +21,7 @@ export default class Resize {
     this.createHandles();
     this.setCheckIcon(options);
 
-    if (options.dragable) {
+    if (options.moveable) {
       setDraggable(this.group, {
         onDragMove: () => {
           if (this.editTarget) {

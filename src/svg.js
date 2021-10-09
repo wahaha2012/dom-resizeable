@@ -1,4 +1,5 @@
 import { setDraggable } from "dom-draggable/svg";
+import { setRotate } from "./rotate";
 import { checkIcon } from "@/components/icons";
 
 export default class Resize {
@@ -12,13 +13,17 @@ export default class Resize {
     this.handleSize = options.handleSize || 8;
     this.editTarget = null;
     this.lockAspectRatio = false;
+    this.minWidth = options.minWidth || 1;
+    this.minHeight = options.minHeight || 1;
 
     this.container = this.createContainer(options.width, options.height);
 
     this.createHandles();
+    options.rotateable && this.createRotateHandle();
     this.setCheckIcon(options);
 
-    if (options.dragable) {
+    // resize control drag moveable
+    if (options.moveable) {
       setDraggable(this.group, {
         onDragMove: () => {
           this.editTarget &&
@@ -28,6 +33,11 @@ export default class Resize {
     }
   }
 
+  /**
+   * set confirm icon
+   * @param {Object} options
+   * @returns
+   */
   setCheckIcon(options) {
     if (options.hideCheckIcon) {
       return;
@@ -43,12 +53,12 @@ export default class Resize {
     });
   }
 
-  createHandles() {
-    const positionList = this.getHandlePosition();
-
-    this.handles = positionList.map((v) => this.createHandle(v));
-  }
-
+  /**
+   * create resize container
+   * @param {Number} width
+   * @param {Number} height
+   * @returns SVG Element
+   */
   createContainer(width, height) {
     const rect = this.group.rect(width, height);
     rect
@@ -60,7 +70,7 @@ export default class Resize {
       .fill("transparent")
       .attr({
         // 关闭抗锯齿
-        "shape-rendering": "crispEdges",
+        // "shape-rendering": "crispEdges",
       })
       .css({
         cursor: "move",
@@ -69,6 +79,99 @@ export default class Resize {
     return rect;
   }
 
+  /**
+   * create rotate handle
+   */
+  createRotateHandle() {
+    const x = this.width / 2;
+    this.rotateBarLength = 30;
+    const r = this.handleSize;
+    const line = this.group.line(x, (-1 * r) / 2, x, -1 * this.rotateBarLength);
+    line
+      .stroke({
+        color: "#000",
+        width: 1,
+        dasharray: [5, 5],
+      })
+      .attr({
+        // "shape-rendering": "crispEdges",
+      });
+
+    const circle = this.group.circle(r);
+    circle
+      .stroke({
+        width: 1,
+        color: "#000",
+      })
+      .fill("#333")
+      .css({
+        cursor: "alias",
+      })
+      .move(x - r / 2, -1 * this.rotateBarLength - r / 2);
+
+    this.bindRotateEvent(circle);
+
+    this.rotateLine = line;
+    this.rotateHandle = circle;
+
+    return circle;
+  }
+
+  /**
+   * bind rotate event
+   * @param {SVGElement} element rotate handle
+   */
+  bindRotateEvent(element) {
+    let startAngle = 90;
+    setRotate(this.container, element, {
+      onStart: (e, origin, angle) => {
+        startAngle = angle;
+      },
+
+      onRotating: (e, origin, angle) => {
+        const angleDelt = startAngle - angle;
+        startAngle = angle;
+        this.group.rotate(angleDelt, this.container.cx(), this.container.cy());
+        this.editTarget.rotate(angleDelt);
+      },
+
+      onEnd: (e, origin, angle) => {},
+    });
+  }
+
+  /**
+   * update rotate bar
+   * @param {Number} left container left position
+   * @param {Number} top container top position
+   * @param {Number} width container width
+   * @param {Number} height container height
+   */
+  updateRotateBar(left, top, width, height) {
+    const r = this.handleSize;
+    this.rotateLine.move(
+      left + width / 2,
+      top + (-1 * r) / 2 - this.rotateBarLength
+    );
+    this.rotateHandle.move(
+      left + width / 2 - r / 2,
+      top + -1 * this.rotateBarLength - r / 2
+    );
+  }
+
+  /**
+   * create resize control handles
+   */
+  createHandles() {
+    const positionList = this.getHandlePosition();
+
+    this.handles = positionList.map((v) => this.createHandle(v));
+  }
+
+  /**
+   * create handle element
+   * @param {Object} config
+   * @returns SVG Element
+   */
   createHandle(config) {
     const { x, y, r, cursor } = config;
     const circle = this.group.circle(r);
@@ -93,6 +196,11 @@ export default class Resize {
     return circle;
   }
 
+  /**
+   * bind event to control handle
+   * @param {SVGElement} handle
+   * @param {Object} config
+   */
   bindHanleEvent(handle, config) {
     const lock = { x: false, y: false };
     if (["s", "n"].includes(config.cursor)) {
@@ -111,6 +219,9 @@ export default class Resize {
 
       onDragMove: (e) => {
         const { w, h, x, y } = this.updateSize(e, handle, lock, config);
+        if (w < this.minWidth || h < this.minHeight) {
+          return false;
+        }
         this.editTarget && this.editTarget.size(w, h).x(x).y(y);
       },
 
@@ -121,6 +232,15 @@ export default class Resize {
     });
   }
 
+  /**
+   * update size resize control ui
+   * @param {Event} e mouse event
+   * @param {SVGElement} handle handle element
+   * @param {Boolean} lock lock direction
+   * @param {Object} config handle config
+   * @param {Boolean} end drag end flag
+   * @returns new bounding data
+   */
   updateSize(e, handle, lock, config, end) {
     const { x, y } = handle.pos;
     const { cursor } = config;
@@ -174,7 +294,17 @@ export default class Resize {
     };
   }
 
+  /**
+   * change size of resize control container
+   * @param {Number} w container width
+   * @param {Number} h container height
+   * @param {Boolean} moving mouse moving flag
+   */
   changeGroupSize(w, h, moving) {
+    if (w <= this.minWidth || h <= this.minHeight) {
+      return false;
+    }
+
     this.container.size(w, h);
     if (!moving) {
       this.width = w;
@@ -191,8 +321,16 @@ export default class Resize {
 
     this.checkIcon &&
       this.checkIcon.move(left + w - this.checkIcon.width(), top);
+
+    this.rotateLine && this.updateRotateBar(left, top, w, h);
   }
 
+  /**
+   * get resize control handles position config
+   * @param {Number} w container width
+   * @param {Number} h container height
+   * @returns position config list
+   */
   getHandlePosition(w, h) {
     const r = this.handleSize;
     const width = w || this.width;
@@ -251,11 +389,24 @@ export default class Resize {
     return positionList;
   }
 
+  /**
+   * bind resize control ui to target element
+   * @param {SVGElement} element target element
+   * @param {Object} config resize config for target element
+   */
   bindEditTarget(element, config = { lockAspectRatio: false }) {
     this.editTarget = element;
     this.lockAspectRatio = config.lockAspectRatio;
     const offset = this.handleSize / 2;
-    this.group.show().move(element.x() - offset, element.y() - offset);
+    const transform = element.transform();
+    console.log("rotate=>", transform);
+    this.group
+      .show()
+      .transform(transform)
+      .move(
+        element.x() - offset,
+        element.y() - offset - (this.rotateBarLength || 0)
+      );
     this.changeGroupSize(element.width(), element.height());
   }
 }
