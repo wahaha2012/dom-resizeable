@@ -59,3 +59,9 @@ options = {
   lockAspectRatio: false, // whether lock aspect ratio when resizing
 }
 ```
+
+## Related Projects
++ https://github.com/daybrush/moveable
++ https://github.com/taye/interact.js
++ https://github.com/easylogic/editor
++ https://github.com/Shopify/draggable
