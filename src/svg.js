@@ -1,5 +1,5 @@
 import { setDraggable } from "dom-draggable/svg";
-import { checkIcon } from "./icons";
+import { checkIcon } from "@/components/icons";
 
 export default class Resize {
   constructor(stage, options) {

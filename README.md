@@ -2,7 +2,7 @@
 Make dom resizeable
 
 ## Snapshot
-![snapshot](assets/snapshot/resize.png);
+![snapshot](assets/snapshot/resize.png)
 
 ## Usage
 ```bash
