@@ -15,7 +15,7 @@ const copy = (file, dist = "dist/") => {
   );
 };
 
-Promise.all([copy("package.json"), copy("README.md"), copy("LICENSE")])
+Promise.all([copy("package.json"), copy("README.md"), copy("LICENSE"), copy("assets", "dist/assets/")])
   .then(() => {
     console.log("copy publish files");
   })
@@ -23,7 +23,7 @@ Promise.all([copy("package.json"), copy("README.md"), copy("LICENSE")])
     throw new Error(err);
   });
 
-const rollupConfig = glob.sync("src/**/*.js").map((inputFile) => {
+const rollupConfig = glob.sync("src/*.js").map((inputFile) => {
   const fileName = inputFile.replace("src/", "");
   return {
     input: inputFile,

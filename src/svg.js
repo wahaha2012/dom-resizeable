@@ -1,5 +1,5 @@
 import { setDraggable } from "dom-draggable/svg";
-import { checkIcon } from "@/components/icons";
+import { checkIcon } from "./icons";
 
 export default class Resize {
   constructor(stage, options) {
@@ -11,7 +11,7 @@ export default class Resize {
     this.height = options.height;
     this.handleSize = options.handleSize || 8;
     this.editTarget = null;
-    this.lockAspectRatio = true;
+    this.lockAspectRatio = false;
 
     this.container = this.createContainer(options.width, options.height);
 
