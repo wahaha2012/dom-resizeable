@@ -163,10 +163,10 @@ deepmerge@^4.2.2:
   resolved "https://registry.yarnpkg.com/deepmerge/-/deepmerge-4.2.2.tgz#44d2ea3679b8f4d4ffba33f03d865fc1e7bf4955"
   integrity sha512-FJ3UgI4gIl+PHZm53knsuSFpE+nESMr7M4v9QcgB7S63Kj/6WqMiFQJpBBYz1Pt+66bZpP3Q7Lye0Oo9MPKEdg==
 
-dom-draggable@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/dom-draggable/-/dom-draggable-0.1.0.tgz#5bfdb230b37ce746cc4313f9473e23f438e7f603"
-  integrity sha512-xUJ/IefgX03pjZaaqvQCE9FNnEhvVDMqogFvR4+URzlgqSl1sQeyf/HdgXHpIZemcZHKRCHNBgiVX793dUHozg==
+dom-draggable@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/dom-draggable/-/dom-draggable-1.0.0.tgz#c166e4da2fd633efb353c36063fa91e177821589"
+  integrity sha512-ZgWYoJjBTPvJTYo9fGXiic8iXQjfkD68WMQHawuKZGjqgPDCGm0/2MHMPIS0vsWRbzmdr1Y61S2wPnqDtTZGOQ==
 
 escape-string-regexp@^1.0.5:
   version "1.0.5"

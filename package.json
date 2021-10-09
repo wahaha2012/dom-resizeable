@@ -1,26 +1,30 @@
 {
   "name": "dom-resizeable",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "make dom resizeable",
-  "main": "index.js",
-  "scripts": {
-    "build": "node ./build/index.js",
-    "test": "test"
+  "keywords": [
+    "dom",
+    "resizeable"
+  ],
+  "homepage": "https://github.com/wahaha2012/dom-resizeable#readme",
+  "bugs": {
+    "url": "https://github.com/wahaha2012/dom-resizeable/issues"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wahaha2012/dom-resizeable.git"
   },
-  "keywords": [
-    "dom",
-    "resizeable"
-  ],
-  "author": "wxwdesign@gmail.com",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/wahaha2012/dom-resizeable/issues"
+  "author": "wxwdesign@gmail.com",
+  "main": "index.js",
+  "scripts": {
+    "build": "node ./build/index.js",
+    "test": "test"
   },
-  "homepage": "https://github.com/wahaha2012/dom-resizeable#readme",
+  "dependencies": {
+    "dom-draggable": "^1.0.0",
+    "utils-es": "^0.5.0"
+  },
   "devDependencies": {
     "@rollup/plugin-buble": "^0.21.3",
     "@rollup/plugin-commonjs": "^21.0.0",
@@ -28,9 +32,5 @@
     "fs-extra": "^10.0.0",
     "glob": "^7.2.0",
     "rollup": "^2.57.0"
-  },
-  "dependencies": {
-    "dom-draggable": "^0.1.0",
-    "utils-es": "^0.5.0"
   }
 }
