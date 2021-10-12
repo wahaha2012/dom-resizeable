@@ -63,3 +63,4 @@ options = {
 ## Related Projects
 + https://github.com/daybrush/moveable
 + https://github.com/easylogic/editor
++ https://github.com/fabricjs/fabric.js
