@@ -1,4 +1,6 @@
 import { setDraggable } from "dom-draggable";
+import { setRotate } from "./rotate";
+import { getStyle } from "./utils/css";
 import { createElement } from "utils-es/dom";
 
 export default class Resize {
@@ -19,6 +21,7 @@ export default class Resize {
     this.group.appendChild(this.container);
 
     this.createHandles();
+    options.rotateable && this.createRotateHandle();
     this.setCheckIcon(options);
 
     if (options.moveable) {
@@ -35,6 +38,11 @@ export default class Resize {
     stage.appendChild(this.group);
   }
 
+  /**
+   * set confirm icon
+   * @param {Object} options confirm icon config
+   * @returns
+   */
   setCheckIcon(options) {
     if (options.hideCheckIcon) {
       return;
@@ -52,6 +60,75 @@ export default class Resize {
     });
   }
 
+  /**
+   * create rotate handle
+   */
+  createRotateHandle() {
+    const x = this.width / 2;
+    this.rotateBarLength = 30;
+    const r = this.handleSize;
+    const line = createElement("div", {
+      class: "rotate-line",
+      style: `width:0;height:${
+        this.rotateBarLength
+      }px;position:absolute;left: ${x}px; top:${
+        -1 * this.rotateBarLength - r / 2
+      }px;border-left: #000 1px dashed;font-size:0;`,
+    });
+    this.group.appendChild(line);
+
+    const circle = createElement("div", {
+      class: "rotate-handle",
+      style: `border-radius: ${
+        r / 2 + 2
+      }px; width:${r}px; height: ${r}px; cursor: alias; border: #000 1px solid; background: #333; left: ${
+        x - r / 2 - 1
+      }px; top:${-1 * this.rotateBarLength - r / 2}px; position: absolute;`,
+    });
+
+    this.group.appendChild(circle);
+
+    this.bindRotateEvent(circle);
+
+    this.rotateLine = line;
+    this.rotateHandle = circle;
+  }
+
+  /**
+   * bind rotate event
+   * @param {HTMLElement} handle rotate handle
+   */
+  bindRotateEvent(handle) {
+    let startAngle = 90;
+    setRotate(this.group, handle, {
+      onStart: (e, origin, angle) => {},
+
+      onRotating: (e, origin, angle) => {
+        // html transform rotate use absolute rotate degree
+        const angleDelt = startAngle - angle;
+
+        this.group.style.transform = `rotate(${angleDelt}deg)`;
+        this.editTarget.style.transform = `rotate(${angleDelt}deg)`;
+      },
+
+      onEnd: (e, origin, angle) => {},
+    });
+  }
+
+  /**
+   * update rotate bar, all handle is relative to parent element
+   * @param {Number} width container width
+   * @param {Number} height container height
+   */
+  updateRotateBar(width) {
+    const r = this.handleSize;
+    this.rotateLine.style.left = width / 2 + "px";
+    this.rotateHandle.style.left = width / 2 - r / 2 + "px";
+  }
+
+  /**
+   * create resize control handles
+   */
   createHandles() {
     const positionList = this.getHandlePosition();
 
@@ -67,6 +144,11 @@ export default class Resize {
     return rect;
   }
 
+  /**
+   * create handle element
+   * @param {Object} config
+   * @returns HTMLElement
+   */
   createHandle(config) {
     const { x, y, r, cursor } = config;
     const left = x - r / 2;
@@ -87,6 +169,11 @@ export default class Resize {
     return circle;
   }
 
+  /**
+   * bind event to control handle
+   * @param {HTMLElement} handle
+   * @param {Object} config
+   */
   bindHanleEvent(handle, config) {
     const lock = { x: false, y: false };
     if (["s", "n"].includes(config.cursor)) {
@@ -111,8 +198,12 @@ export default class Resize {
         if (this.editTarget) {
           this.editTarget.style.width = w + "px";
           this.editTarget.style.height = h + "px";
-          this.editTarget.style.left = x + "px";
-          this.editTarget.style.top = y + "px";
+          // this.editTarget.style.left = x + "px";
+          // this.editTarget.style.top = y + "px";
+
+          // sync position with resize group
+          this.editTarget.style.left = x;
+          this.editTarget.style.top = y;
         }
       },
 
@@ -123,6 +214,15 @@ export default class Resize {
     });
   }
 
+  /**
+   * update size resize control ui
+   * @param {Event} e mouse event
+   * @param {HTMLElement} handle handle element
+   * @param {Boolean} lock lock direction
+   * @param {Object} config handle config
+   * @param {Boolean} end drag end flag
+   * @returns new bounding data
+   */
   updateSize(e, handle, lock, config, end) {
     const { x, y } = handle.pos;
     const { cursor } = config;
@@ -165,18 +265,26 @@ export default class Resize {
     }
 
     this.changeGroupSize(w, h, !end);
-    const { left, top } = this.group.getBoundingClientRect();
+    // const { left, top } = this.group.getBoundingClientRect();
 
     return {
       w,
       h,
-      x: left,
-      y: top,
+      // x: left,
+      // y: top,
+      x: this.group.style.left,
+      y: this.group.style.top,
       // xMove: lock.x ? 0 : xMove,
       // yMove: lock.y ? 0 : yMove,
     };
   }
 
+  /**
+   * change size of resize control container
+   * @param {Number} w container width
+   * @param {Number} h container height
+   * @param {Boolean} moving mouse moving flag
+   */
   changeGroupSize(w, h, moving) {
     this.container.style.width = w + "px";
     this.container.style.height = h + "px";
@@ -198,8 +306,16 @@ export default class Resize {
       this.checkIcon.style.right = "5px";
       this.checkIcon.style.top = "2px";
     }
+
+    this.rotateLine && this.updateRotateBar(w, h);
   }
 
+  /**
+   * get resize control handles position config
+   * @param {Number} w container width
+   * @param {Number} h container height
+   * @returns position config list
+   */
   getHandlePosition(w, h) {
     const r = this.handleSize;
     const width = w || this.width;
@@ -258,14 +374,29 @@ export default class Resize {
     return positionList;
   }
 
+  /**
+   * bind resize control ui to target element
+   * @param {HTMLElement} element target element
+   * @param {Object} config resize config for target element
+   */
   bindEditTarget(element, config = { lockAspectRatio: false }) {
     this.editTarget = element;
     this.lockAspectRatio = config.lockAspectRatio;
     this.group.style.display = "block";
+    // cache transform
+    const targetTransform = element.style.transform;
 
+    // sync transfrom from edit target element to resize ui group
+    this.group.style.transform = targetTransform;
+
+    // reset transform setting
+    this.editTarget.style.transform = "";
     const { left, top, width, height } = element.getBoundingClientRect();
     this.group.style.left = left + "px";
     this.group.style.top = top + "px";
+    // restore transform style
+    this.editTarget.style.transform = targetTransform;
+
     this.changeGroupSize(width, height);
   }
 }

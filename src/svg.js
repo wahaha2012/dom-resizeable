@@ -399,7 +399,6 @@ export default class Resize {
     this.lockAspectRatio = config.lockAspectRatio;
     const offset = this.handleSize / 2;
     const transform = element.transform();
-    console.log("rotate=>", transform);
     this.group
       .show()
       .transform(transform)

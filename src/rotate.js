@@ -80,23 +80,36 @@ const mouseupHandler = function (e) {
  */
 export const setRotate = (targetElement, handleElement, options = {}) => {
   const element = handleElement;
-  if (!element || typeof element.move !== "function") {
+  const isHTML = targetElement instanceof HTMLElement;
+  if (!element) {
+    return;
+  }
+
+  if (!isHTML && typeof element.move !== "function") {
     console.error(
       `Rotate target ${element} is not an element of @svgdotjs/svg.js, maybe you should install @svgdotjs/svg.js firstly.`
     );
     return element;
   }
 
-  element.on("mousedown", (e) => {
+  const rotateStart = (e) => {
     e.stopPropagation();
+    let targetBounding = {};
+    if (isHTML) {
+      targetBounding = targetElement.getBoundingClientRect();
+    }
 
     // set event target to current target
     _target = {
       element,
       options,
       origin: {
-        x: targetElement.cx(),
-        y: targetElement.cy(),
+        x: !isHTML
+          ? targetElement.cx()
+          : targetBounding.left + targetBounding.width / 2,
+        y: !isHTML
+          ? targetElement.cy()
+          : targetBounding.top + targetBounding.height / 2,
       },
     };
 
@@ -115,7 +128,13 @@ export const setRotate = (targetElement, handleElement, options = {}) => {
     element.rotate = true;
 
     addEventListener();
-  });
+  };
+
+  if (isHTML) {
+    element.addEventListener("mousedown", rotateStart);
+  } else {
+    element.on("mousedown", rotateStart);
+  }
 
   return element;
 };
